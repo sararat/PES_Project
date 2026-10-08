@@ -15,6 +15,26 @@ app.use(cors({
 }));
 
 app.use(express.json());
+
+function auth(req, res, next) {
+  const token = req.headers.authorization?.split(" ")[1];
+
+  if (!token) {
+    return res.status(401).json({
+      message: "กรุณาเข้าสู่ระบบ"
+    });
+  }
+
+  try {
+    req.user = jwt.verify(token, SECRET);
+    next();
+  } catch {
+    res.status(401).json({
+      message: "Token ไม่ถูกต้อง"
+    });
+  }
+}
+
 app.get("/", (req, res) => {
   res.json({
     message: "HRsystem API"
@@ -223,6 +243,114 @@ app.get("/api/evaluation/:id", async (req, res) => {
   }
 });
 
+app.get("/api/evaluation-settings", auth, async (req, res) => {
+  try {
+    const [rows] = await db.promise().query(
+      "SELECT * FROM settings ORDER BY id DESC"
+    );
+
+    res.json(rows);
+  } catch (error) {
+    console.error("SETTINGS GET ERROR:", error);
+    res.status(500).json({
+      message: "โหลดข้อมูลไม่สำเร็จ"
+    });
+  }
+});
+
+app.post("/api/evaluation-settings", auth, async (req, res) => {
+  try {
+    const {
+      period_name,
+      topic_name,
+      indicator_name,
+      weight,
+      evidence_type
+    } = req.body;
+
+    await db.promise().query(
+      `INSERT INTO settings
+      (period_name, topic_name, indicator_name, weight, evidence_type)
+      VALUES (?, ?, ?, ?, ?)`,
+      [
+        period_name,
+        topic_name,
+        indicator_name,
+        weight || 0,
+        evidence_type || "none"
+      ]
+    );
+
+    res.json({
+      message: "เพิ่มข้อมูลสำเร็จ"
+    });
+
+  } catch (error) {
+    console.error("SETTINGS POST ERROR:", error);
+    res.status(500).json({
+      message: "เพิ่มข้อมูลไม่สำเร็จ"
+    });
+  }
+});
+
+app.put("/api/evaluation-settings/:id", auth, async (req, res) => {
+  try {
+    const {
+      period_name,
+      topic_name,
+      indicator_name,
+      weight,
+      evidence_type
+    } = req.body;
+
+    await db.promise().query(
+      `UPDATE settings
+       SET period_name = ?,
+           topic_name = ?,
+           indicator_name = ?,
+           weight = ?,
+           evidence_type = ?
+       WHERE id = ?`,
+      [
+        period_name,
+        topic_name,
+        indicator_name,
+        weight || 0,
+        evidence_type || "none",
+        req.params.id
+      ]
+    );
+
+    res.json({
+      message: "แก้ไขข้อมูลสำเร็จ"
+    });
+
+  } catch (error) {
+    console.error("SETTINGS PUT ERROR:", error);
+    res.status(500).json({
+      message: "แก้ไขข้อมูลไม่สำเร็จ"
+    });
+  }
+});
+
+app.delete("/api/evaluation-settings/:id", auth, async (req, res) => {
+  try {
+    await db.promise().query(
+      "DELETE FROM settings WHERE id = ?",
+      [req.params.id]
+    );
+
+    res.json({
+      message: "ลบข้อมูลสำเร็จ"
+    });
+
+  } catch (error) {
+    console.error("SETTINGS DELETE ERROR:", error);
+    res.status(500).json({
+      message: "ลบข้อมูลไม่สำเร็จ"
+    });
+  }
+});
 
 app.listen(PORT, () => {
   console.log(

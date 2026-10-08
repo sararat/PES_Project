@@ -1,106 +1,212 @@
 <template>
-  <div class="min-h-screen bg-gray-100 py-20" style="font-family: 'Prompt', sans-serif;">
-    <div class="max-w-5xl mx-auto bg-white shadow-lg rounded-xl p-6">
-      <h1 class="text-2xl font-bold text-gray-800 mb-4">User Management</h1>
+  <div class="p-6">
+    <div class="bg-white p-6 rounded-xl shadow">
+      <div class="flex justify-between mb-4">
+        <h1 class="text-2xl font-bold">จัดการการประเมิน</h1>
+        <button
+          @click="add"
+          class="bg-blue-600 text-white px-4 py-2 rounded"
+        >
+          + เพิ่ม
+        </button>
+      </div>
 
-      <div class="overflow-x-auto rounded-lg shadow border border-gray-200">
-        <table class="w-full text-left text-gray-700">
-          <thead class="bg-blue-100 text-gray-800">
-            <tr>
-              <th class="px-4 py-3">No</th>
-              <th class="px-4 py-3">Full Name</th>
-              <th class="px-4 py-3">Username</th>
-              <th class="px-4 py-3 text-center">Actions</th>
-            </tr>
-          </thead>
+      <table class="w-full border">
+        <thead class="bg-gray-100">
+          <tr>
+            <th class="border p-2">รอบ</th>
+            <th class="border p-2">หัวข้อ</th>
+            <th class="border p-2">ตัวชี้วัด</th>
+            <th class="border p-2">น้ำหนัก</th>
+            <th class="border p-2">หลักฐาน</th>
+            <th class="border p-2">จัดการ</th>
+          </tr>
+        </thead>
 
-          <tbody>
-            <tr v-for="(user, index) in users" :key="user.id" class="border-b hover:bg-gray-50">
-              <td class="px-4 py-3">{{ index + 1 }}</td>
+        <tbody>
+          <tr v-for="item in items" :key="item.id">
 
-              <td class="px-4 py-3">
-                <div v-if="editId !== user.id">{{ user.fname }} {{ user.lname }}</div>
-                <div v-else class="space-x-2">
-                  <input v-model="editForm.fname" class="border rounded p-1" placeholder="First Name" />
-                  <input v-model="editForm.lname" class="border rounded p-1" placeholder="Last Name" />
-                </div>
-              </td>
+            <td class="border p-2">
+              {{ item.period_name }}
+            </td>
 
-              <td class="px-4 py-3">
-                <div v-if="editId !== user.id">{{ user.username }}</div>
-                <div v-else>
-                  <input v-model="editForm.username" class="border rounded p-1" placeholder="Username" />
-                </div>
-              </td>
+            <td class="border p-2">
+              {{ item.topic_name }}
+            </td>
 
-              <td class="flex flex-col items-center gap-2 px-4 py-2">
-                <button v-if="editId !== user.id" @click="startEdit(user)" class="px-3 py-1 bg-yellow-400 text-white rounded hover:bg-yellow-500">Edit</button>
-                <button v-else @click="saveEdit(user.id)" class="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600">Save</button>
-                <button v-if="editId === user.id" @click="cancelEdit" class="px-3 py-1 bg-gray-300 text-gray-800 rounded hover:bg-gray-400">Cancel</button>
-                <button @click="deleteUser(user.id)" class="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600">Delete</button>
-              </td>
-            </tr>
-            <tr v-if="users.length === 0">
-              <td colspan="4" class="text-center py-4 text-gray-500">No users yet</td>
-            </tr>
-          </tbody>
-        </table>
+            <td class="border p-2">
+              {{ item.indicator_name }}
+            </td>
+
+            <td class="border p-2 text-center">
+              {{ item.weight }}
+            </td>
+
+            <td class="border p-2 text-center">
+              {{ item.evidence_type }}
+            </td>
+
+            <td class="border p-2 text-center">
+
+              <button
+                @click="edit(item)"
+                class="bg-yellow-500 text-white px-3 py-1 rounded mr-2"
+              >
+                แก้ไข
+              </button>
+
+              <button
+                @click="remove(item.id)"
+                class="bg-red-600 text-white px-3 py-1 rounded"
+              >
+                ลบ
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div
+      v-if="show"
+      class="fixed inset-0 bg-black/50 flex items-center justify-center"
+    >
+      <div class="bg-white p-6 rounded-xl w-full max-w-xl">
+        <h2 class="text-xl font-bold mb-4">
+          {{ editId ? "แก้ไขข้อมูล" : "เพิ่มข้อมูล" }}
+        </h2>
+        <div class="grid gap-3">
+          <input
+            v-model="form.period_name"
+            placeholder="รอบการประเมิน"
+            class="border p-2 rounded"
+          >
+          <div class="grid grid-cols-2 gap-2">
+            <h3>วันเริ่มต้น</h3>
+            <input
+              v-model="form.start_date"
+              type="date"
+              class="border p-2 rounded"
+            >
+            <h3>วันสิ้นสุด</h3>
+            <input
+              v-model="form.end_date"
+              type="date"
+              class="border p-2 rounded"
+            >
+          </div>
+          <input
+            v-model="form.topic_name"
+            placeholder="หัวข้อการประเมิน"
+            class="border p-2 rounded"
+          >
+          <input
+            v-model="form.indicator_name"
+            placeholder="ชื่อตัวชี้วัด"
+            class="border p-2 rounded"
+          >
+          <input
+            v-model.number="form.weight"
+            type="number"
+            placeholder="น้ำหนักคะแนน"
+            class="border p-2 rounded"
+          >
+          <select
+            v-model="form.evidence_type"
+            class="border p-2 rounded"
+          >
+            <option value="none">ไม่ใช้หลักฐาน</option>
+            <option value="pdf">PDF</option>
+            <option value="url">URL</option>
+            <option value="both">PDF / URL</option>
+          </select>
+        </div>
+        <div class="flex justify-end gap-2 mt-5">
+          <button
+            @click="show = false"
+            class="border px-4 py-2 rounded"
+          >
+            ยกเลิก
+          </button>
+          <button
+            @click="save"
+            class="bg-blue-600 text-white px-4 py-2 rounded"
+          >
+            บันทึก
+          </button>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted } from "vue";
+import axios from "axios";
+ 
+const api = "http://localhost:3000/api/evaluation-settings";
+const token = () => ({
+  headers: {
+    Authorization: `Bearer ${localStorage.getItem("token")}`
+  }
+});
 
-const users = ref([]);
+const items = ref([]);
+const show = ref(false);
 const editId = ref(null);
-const editForm = ref({ fname: '', lname: '', username: '' });
-
-
-const fetchUsers = async () => {
-  try {
-    const res = await fetch('http://localhost:3000/users');
-    users.value = await res.json();
-  } catch (err) {
-    console.error(err);
-  }
+const form = ref({
+  period_name: "",
+  topic_name: "",
+  indicator_name: "",
+  weight: 0,
+  evidence_type: "none"
+});
+const load = async () => {
+  const res = await axios.get(api, token());
+  items.value = res.data;
 };
-
-const startEdit = (user) => {
-  editId.value = user.id;
-  editForm.value = { ...user };
-};
-
-const cancelEdit = () => {
+const add = () => {
   editId.value = null;
-  editForm.value = { fname: '', lname: '', username: '' };
+  form.value = {
+    period_name: "",
+    topic_name: "",
+    indicator_name: "",
+    weight: 0,
+    evidence_type: "none"
+  };
+
+  show.value = true;
 };
 
-const saveEdit = async (id) => {
-  try {
-    await fetch(`http://localhost:3000/users/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(editForm.value)
-    });
-    cancelEdit();
-    fetchUsers();
-  } catch (err) {
-    console.error(err);
+const edit = (item) => {
+  editId.value = item.id;
+  form.value = { ...item };
+  show.value = true;
+};
+const save = async () => {
+  if (editId.value) {
+    await axios.put(
+      `${api}/${editId.value}`,
+      form.value,
+      token()
+    );
+  } else {
+    await axios.post(
+      api,
+      form.value,
+      token()
+    );
   }
+  show.value = false;
+  load();
 };
-
-const deleteUser = async (id) => {
-  if (confirm('คุณต้องการลบ user นี้ใช่หรือไม่?')) {
-    try {
-      await fetch(`http://localhost:3000/users/${id}`, { method: 'DELETE' });
-      fetchUsers();
-    } catch (err) {
-      console.error(err);
-    }
-  }
+const remove = async (id) => {
+  if (!confirm("ต้องการลบข้อมูลหรือไม่?")) return;
+  await axios.delete(
+    `${api}/${id}`,
+    token()
+  );
+  load();
 };
+onMounted(load);
 
-onMounted(fetchUsers);
 </script>

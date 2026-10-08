@@ -55,3 +55,12 @@ INSERT INTO assignments
 (evaluator_id, evaluatee_id, evaluatee_name, department, period_id, period, status)
 VALUES
 (2, 5, 'นายสมชาย ใจดี', 'เทคโนโลยีสารสนเทศ', 1, 'รอบที่ 1/2569', 'รอประเมิน');
+
+CREATE TABLE settings (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    period_name VARCHAR(100) NOT NULL,
+    topic_name VARCHAR(255) NOT NULL,
+    indicator_name VARCHAR(255) NOT NULL,
+    weight DECIMAL(5,2) DEFAULT 0,
+    evidence_type ENUM('none','pdf','url','both') DEFAULT 'none'
+);

@@ -5,6 +5,7 @@ CREATE TABLE users (
     id INT AUTO_INCREMENT PRIMARY KEY,
     fname VARCHAR(100) NOT NULL,
     lname VARCHAR(100) NOT NULL,
+    department VARCHAR(100);,
     username VARCHAR(100) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
     role ENUM(
@@ -12,34 +13,8 @@ CREATE TABLE users (
         'evaluatee',
         'evaluator'
     ) NOT NULL,
-    avatar VARCHAR(255) NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-CREATE TABLE employees (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    employee_code VARCHAR(20),
-    name VARCHAR(100),
-    position VARCHAR(100),
-    department_id INT
-);
-INSERT INTO employees
-(employee_code, name, position, department_id)
-VALUES
-('EMP001', 'นายสมชาย ใจดี', 'ครู', 1),
-('EMP002', 'นางสาวสมหญิง ดีมาก', 'ครู', 1),
-('EMP003', 'นายวิชัย เก่งงาน', 'ครูผู้ช่วย', 2),
-('EMP004', 'นายอนันต์ เทคโนโลยี', 'ครู', 3),
-('EMP005', 'นายประสิทธิ์ ช่างดี', 'ครู', 4);
-CREATE TABLE departments (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(100)
-);
-INSERT INTO departments (name)
-VALUES
-('เทคโนโลยีสารสนเทศ'),
-('คอมพิวเตอร์ธุรกิจ'),
-('อิเล็กทรอนิกส์'),
-('ช่างยนต์');
  
 CREATE TABLE assignments (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -49,12 +24,15 @@ CREATE TABLE assignments (
     department VARCHAR(100),
     period_id INT,
     period VARCHAR(100),
-    status VARCHAR(30)
+    status VARCHAR(30),
+    evaluatee_data JSON NULL
+    evaluator_comment TEXT NULL,
+    evaluator_signature TEXT NULL;
 );
 INSERT INTO assignments
-(evaluator_id, evaluatee_id, evaluatee_name, department, period_id, period, status)
+(evaluator_id, evaluatee_id, evaluatee_name, department, period_id, period, status,evaluatee_data)
 VALUES
-(2, 5, 'นายสมชาย ใจดี', 'เทคโนโลยีสารสนเทศ', 1, 'รอบที่ 1/2569', 'รอประเมิน');
+(2, 5, 'นายสมชาย ใจดี', 'เทคโนโลยีสารสนเทศ', 1, 'รอบที่ 1/2569', 'รอประเมิน', "PDF");
 
 CREATE TABLE settings (
     id INT AUTO_INCREMENT PRIMARY KEY,

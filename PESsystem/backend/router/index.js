@@ -18,12 +18,11 @@ import dashboard from "../../src/frontend/views/dashboard.vue";
 // กรรมการผู้ประเมิน
 // ==============================
 import evaluatorAssign from "../../src/frontend/components/evaluator/evaluatorAssign.vue";
-import evaluatorForm from "../../src/frontend/components/evaluator/evaluatorForm.vue";
 // ==============================
 // ผู้รับการประเมิน
 // ==============================
 import evaluateeAssign from "../../src/frontend/components/teacher/evaluateeAssign.vue";
-import evaluateeForm from "../../src/frontend/components/teacher/evaluateeForm.vue";
+
 
 const routes = [
   {
@@ -46,12 +45,7 @@ const routes = [
 
   {
     path: "/profile",
-    name: "profile",
-    component: profile,
-
-    meta: {
-      requiresAuth: true
-    }
+    component: () => import("../../src/frontend/views/profile.vue")
   },
 
   {
@@ -75,19 +69,12 @@ const routes = [
       role: "evaluator"
     }
   },
-
   {
     path: "/evaluator/assignments/:id",
-    name: "evaluationForm",
-    component: evaluateeForm,
-    props: true,
-
-    meta: {
-      requiresAuth: true,
-      role: "evaluator"
-    }
+    name: "EvaluatorEva",
+    component: () =>
+      import("../../src/frontend/components/evaluator/evaluatorEva.vue")
   },
-
   {
     path: "/evaluatee",
     name: "evaluateeAssign",
@@ -100,25 +87,10 @@ const routes = [
   },
 
   {
-    path: "/evaluatee/assignments/:id",
-    name: "evaluateeForm",
-    component: evaluateeForm,
-    props: true,
-    meta: {
-      requiresAuth: true,
-      role: "evaluatee"
-    }
-  },
-
-  {
     path: "/reports",
     name: "reports",
-
     component: () =>
-      import("../../src/frontend/views/report.vue"),
-    meta: {
-      requiresAuth: true
-    }
+      import("../../src/frontend/views/report.vue")
   }
 ];
 

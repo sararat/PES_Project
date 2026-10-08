@@ -1,231 +1,128 @@
 <template>
   <div class="min-h-screen bg-gray-100">
-    <section class="flex gap-4 justify-center py-6 flex-wrap">
-      <select
-        v-model="selectedPeriod"
-        class="border rounded-lg px-4 py-2 bg-white"
-      >
-        <option value="">
-          รอบการประเมิน
-        </option>
-        <option
-          v-for="period in periods"
-          :key="period"
-          :value="period"
-        >
-          {{ period }}
-        </option>
-      </select>
-      <select
-        v-model="selectedDept"
-        class="border rounded-lg px-4 py-2 bg-white"
-      >
-        <option value="">
-          ภาควิชา
-        </option>
-        <option
-          v-for="department in departments"
-          :key="department"
-          :value="department"
-        >
-          {{ department }}
-        </option>
-      </select>
-      <input
-        v-model="search"
-        type="text"
-        placeholder="🔍 ค้นหาชื่อบุคลากร..."
-        class="border rounded-lg px-4 py-2 w-64 bg-white"
-      />
-    </section>
-    <div
-      v-if="loading"
-      class="text-center py-10 text-gray-500"
-    >
+
+    <!-- Loading -->
+    <div v-if="loading" class="text-center py-10">
       กำลังโหลดข้อมูล...
     </div>
+
+    <!-- Error -->
     <div
       v-else-if="error"
       class="mx-10 bg-red-100 text-red-700 p-4 rounded-lg"
     >
       {{ error }}
     </div>
+
+    <!-- ไม่มีข้อมูล -->
     <div
-      v-else-if="filteredUsers.length === 0"
+      v-else-if="users.length === 0"
       class="text-center py-10 text-gray-500"
     >
-      ไม่พบข้อมูลผู้รับการประเมิน
+      ยังไม่มีผู้เข้ารับการประเมิน
     </div>
+
+    <!-- รายชื่อ -->
     <section
       v-else
-      class="px-10 grid sm:grid-cols-2 lg:grid-cols-3 gap-6"
+      class="px-10 py-6 grid sm:grid-cols-2 lg:grid-cols-3 gap-6"
     >
+
       <div
-        v-for="u in filteredUsers"
+        v-for="u in users"
         :key="u.id"
-        class="bg-blue-100 rounded-2xl p-6 shadow hover:shadow-lg transition"
+        class="bg-white rounded-2xl p-6 shadow"
       >
-        <h3 class="text-lg font-semibold">
-          {{ u.name }}
+
+        <h3 class="text-lg font-bold">
+          {{ u.evaluatee_name }}
         </h3>
 
-        <p class="text-gray-600 text-sm mt-1">
+        <p class="text-gray-600 mt-1">
           {{ u.department }}
         </p>
 
-        <span
-          class="inline-block mt-2 text-xs bg-blue-200 text-blue-700 px-2 py-1 rounded"
-        >
-          {{ u.period }}
-        </span>
+        <p class="text-sm mt-2">
+          รอบ: {{ u.period }}
+        </p>
 
-        <div class="mt-3">
-          <span
-            v-if="u.status === 'pending'"
-            class="text-xs bg-yellow-100 text-yellow-700 px-2 py-1 rounded"
-          >
-            รอประเมิน
-          </span>
-          <span
-            v-else-if="u.status === 'completed'"
-            class="text-xs bg-green-100 text-green-700 px-2 py-1 rounded"
-          >
-            ประเมินแล้ว
-          </span>
-          <span
-            v-else
-            class="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded"
-          >
+        <p class="text-sm mt-1">
+          ผู้ประเมิน:
+          {{ u.evaluator_fname }}
+          {{ u.evaluator_lname }}
+        </p>
+
+        <p class="mt-2">
+          สถานะ:
+          <span class="text-blue-600">
             {{ u.status }}
           </span>
-        </div>
+        </p>
 
-        <div class="mt-6 flex justify-end">
-          <router-link
-            :to="{
-              name: 'EvaluationForm',
-              params: {
-                id: u.id
-              }
-            }"
-            class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg"
-          >
-            เริ่มประเมิน
-          </router-link>
-        </div>
+        <button
+          @click="openEvaluation(u.id)"
+          class="mt-5 bg-blue-600 text-white px-4 py-2 rounded-lg"
+        >
+          ประเมิน
+        </button>
+
       </div>
+
     </section>
 
-    <footer
-      class="bg-white text-center py-4 text-gray-500 text-sm mt-8"
-      style="font-family: 'Prompt', sans-serif;"
-    >
+    <footer class="bg-white text-center py-4 text-gray-500 text-sm mt-8">
       © 2026 วิทยาลัยเทคนิคขอนแก่น — ระบบประเมินบุคลากร
     </footer>
+
   </div>
 </template>
 
 <script setup>
-import { useAuthStore } from "../../stores/auth.js"
-const auth = useAuthStore()
-import {
-  ref,
-  computed,
-  onMounted
-} from "vue";
-
+import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
+import axios from "axios";
 
 const router = useRouter();
+
+const API = "http://localhost:3000/api";
+
 const users = ref([]);
-const search = ref("");
-const selectedPeriod = ref("");
-const selectedDept = ref("");
-const loading = ref(false);
+const loading = ref(true);
 const error = ref("");
-const API_URL = "http://localhost:3000/api";
-const loadAssignments = async () => {
-  loading.value = true
-  error.value = ""
+
+async function load() {
+  const token = localStorage.getItem("token");
+
+  if (!token) {
+    error.value = "กรุณาเข้าสู่ระบบ";
+    loading.value = false;
+    router.push("/login");
+    return;
+  }
+
   try {
-    const res = await fetch(
-      `${API}/evaluator/assignments`,
+    const res = await axios.get(
+      `${API}/evaluatee/assignments`,
       {
         headers: {
-          Authorization: `Bearer ${auth.token}`
+          Authorization: `Bearer ${token}`
         }
       }
-    )
-    if (!res.ok) {
-      throw new Error(`HTTP Error ${res.status}`)
-    }
-    const result = await res.json()
-    users.value = result.data || []
+    );
+
+    users.value = res.data.data || [];
+
   } catch (err) {
-    console.error("โหลดข้อมูลไม่สำเร็จ:", err)
-    error.value = "ไม่สามารถโหลดข้อมูลได้"
+    console.error(err);
+    error.value = "ไม่สามารถโหลดข้อมูลได้";
   } finally {
-    loading.value = false
+    loading.value = false;
   }
 }
 
-onMounted(() => {
-  loadAssignments();
-});
+function openEvaluation(id) {
+  router.push(`/evaluator/assignments/${id}`);
+}
 
-const periods = computed(() => {
-  return [
-    ...new Set(
-      users.value.map(
-        u => u.period
-      )
-    )
-  ];
-});
-
-const departments = computed(() => {
-  return [
-    ...new Set(
-      users.value.map(
-        u => u.department
-      )
-    )
-  ];
-});
-
-const filteredUsers = computed(() => {
-  const keyword =
-    search.value
-      .trim()
-      .toLowerCase();
-  return users.value.filter(u => {
-    const matchPeriod =
-      !selectedPeriod.value ||
-      u.period === selectedPeriod.value;
-
-    const matchDepartment =
-      !selectedDept.value ||
-      u.department === selectedDept.value;
-
-    const matchSearch =
-      !keyword ||
-      u.name
-        .toLowerCase()
-        .includes(keyword);
-
-    return (
-      matchPeriod &&
-      matchDepartment &&
-      matchSearch
-    );
-  });
-});
-
-const goSignIn = () => {
-  router.push("/signin");
-};
-
-const goSignUp = () => {
-  router.push("/signup");
-};
+onMounted(load);
 </script>

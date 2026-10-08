@@ -1,100 +1,240 @@
 <template>
-  <div class="min-h-screen bg-gray-100 p-8">
-    <h1 class="text-2xl font-bold mb-6">
-      แบบประเมินของฉัน
-    </h1>
+  <div class="p-6 bg-gray-100 min-h-screen">
 
-    <div v-if="loading">
-      กำลังโหลดข้อมูล...
-    </div>
+    <div class="max-w-4xl mx-auto">
 
-    <div v-else-if="error" class="text-red-500">
-      {{ error }}
-    </div>
+      <h1 class="text-2xl font-bold text-center mb-6">
+        การประเมินตนเอง
+      </h1>
 
-    <div
-      v-else-if="assignments.length === 0"
-      class="bg-white p-6 rounded-xl"
-    >
-      ยังไม่มีแบบประเมิน
-    </div>
-    <div
-      v-else
-      class="grid md:grid-cols-2 lg:grid-cols-3 gap-6"
-    >
+      <!-- ข้อมูลผู้รับการประเมิน -->
       <div
-        v-for="item in assignments"
-        :key="item.id"
-        class="bg-white p-6 rounded-xl shadow"
+        v-if="assignment"
+        class="bg-white p-5 rounded-xl shadow mb-6"
       >
         <h2 class="text-xl font-bold">
-          {{ item.evaluatee_name }}
+          ผู้รับการประเมิน: {{ assignment.evaluatee_name }}
         </h2>
-        <p class="mt-2">
-          ภาควิชา: {{ item.department }}
-        </p>
-        <p>
-          รอบการประเมิน: {{ item.period }}
+
+        <p class="text-gray-600 mt-2">
+          แผนก: {{ assignment.department }}
         </p>
 
-        <p class="mt-2">
-          สถานะ:
-          <span class="text-blue-600">
-            {{ item.status }}
-          </span>
+        <p class="text-gray-600">
+          รอบประเมิน: {{ assignment.period }}
         </p>
-
-        <button
-          @click="openEvaluation(item.id)"
-          class="mt-4 bg-blue-500 text-white px-4 py-2 rounded-lg"
-        >
-          ทำแบบประเมิน
-        </button>
       </div>
+
+      <!-- ตัวชี้วัดทั้งหมด -->
+      <div
+        v-if="indicators.length > 0"
+        class="bg-white rounded-xl shadow p-6"
+      >
+
+        <h2 class="text-xl font-bold mb-6">
+          รายละเอียดการประเมิน
+        </h2>
+
+        <div
+          v-for="(item, index) in indicators"
+          :key="item.id"
+          class="border-b pb-6 mb-6 last:border-b-0"
+        >
+
+          <!-- ตัวชี้วัด -->
+          <div class="flex justify-between mb-2">
+
+            <h3 class="font-bold">
+              {{ index + 1 }}. {{ item.indicator_name }}
+            </h3>
+
+            <span class="text-sm text-gray-500">
+              น้ำหนัก {{ item.weight }}
+            </span>
+
+          </div>
+
+          <p class="text-gray-600 mb-4">
+            หัวข้อ: {{ item.topic_name }}
+          </p>
+
+          <!-- รายละเอียด -->
+          <label class="font-semibold">
+            ข้อมูล / รายละเอียดการดำเนินงาน
+          </label>
+
+          <textarea
+            v-model="item.detail"
+            rows="3"
+            class="w-full border rounded-lg p-3 mt-2 mb-4"
+            placeholder="กรอกข้อมูลการดำเนินงาน"
+          ></textarea>
+
+          <!-- หลักฐาน -->
+          <label class="font-semibold">
+            หลักฐาน
+          </label>
+
+          <input
+            v-model="item.evidence"
+            type="text"
+            class="w-full border rounded-lg p-3 mt-2 mb-4"
+            placeholder="URL หรือชื่อไฟล์หลักฐาน"
+          />
+
+          <!-- คะแนน -->
+          <label class="font-semibold">
+            คะแนนประเมินตนเอง
+          </label>
+
+          <select
+            v-model="item.self_score"
+            class="w-full border rounded-lg p-3 mt-2"
+          >
+            <option value="">
+              -- เลือกคะแนน --
+            </option>
+
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+          </select>
+
+        </div>
+
+        <!-- ปุ่มบันทึกครั้งเดียว -->
+        <div class="flex justify-center pt-4">
+
+          <button
+            @click="saveAll"
+            :disabled="saving"
+            class="bg-blue-600 text-white px-10 py-3 rounded-lg hover:bg-blue-700 disabled:bg-gray-400"
+          >
+            {{ saving ? "กำลังบันทึก..." : "บันทึกทั้งหมด" }}
+          </button>
+
+        </div>
+
+      </div>
+
+      <!-- ไม่พบข้อมูล -->
+      <div
+        v-else-if="!loading"
+        class="bg-white p-6 rounded-xl shadow text-center"
+      >
+        ไม่พบข้อมูลตัวชี้วัด
+      </div>
+
     </div>
+
   </div>
 </template>
+
 <script setup>
-
-import { ref, onMounted } from "vue";
-import { useRouter } from "vue-router";
 import axios from "axios";
+import { ref, onMounted } from "vue";
 
-const router = useRouter();
-const assignments = ref([]);
+const indicators = ref([]);
+const assignment = ref(null);
 const loading = ref(true);
-const error = ref("");
-const API = "http://localhost:3000/api";
+const saving = ref(false);
 
-async function loadAssignments() {
+
+// =====================
+// โหลดข้อมูล
+// =====================
+async function loadData() {
+
   try {
-    const response = await axios.get(
-      `${API}/evaluatee/assignments`
-    );
-    console.log(
-      "ข้อมูลจาก Backend:",
-      response.data
-    );
-    assignments.value =
-      response.data.data || [];
 
-  } catch (err) {
-    console.error(err);
-    error.value =
-      "ไม่สามารถโหลดข้อมูลได้";
+    const token = localStorage.getItem("token");
+
+    const res = await axios.get(
+      "http://localhost:3000/api/evaluatee",
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    );
+
+    assignment.value = res.data.assignment;
+
+    indicators.value = res.data.indicators || [];
+
+  } catch (error) {
+
+    console.error("LOAD ERROR:", error);
+
   } finally {
+
     loading.value = false;
+
   }
 }
 
-function openEvaluation(id) {
-  router.push(
-    `/evaluatee/assignments/${id}`
-  );
+
+// =====================
+// บันทึกทั้งหมด
+// =====================
+async function saveAll() {
+  try {
+
+    saving.value = true;
+
+    const token = localStorage.getItem("token");
+
+    const data = {};
+
+    indicators.value.forEach(item => {
+
+      data[item.id] = {
+        detail: item.detail || "",
+        evidence: item.evidence || "",
+        self_score: item.self_score || ""
+      };
+
+    });
+
+    console.log("SAVE DATA:", data);
+
+    const res = await axios.post(
+      "http://localhost:3000/api/evaluatee",
+      {
+        data: data
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    );
+
+    console.log("SAVE RESULT:", res.data);
+
+    alert("บันทึกข้อมูลเรียบร้อย");
+
+  } catch (error) {
+
+    console.error("SAVE ERROR:", error);
+
+    alert(
+      error.response?.data?.message ||
+      "บันทึกข้อมูลไม่สำเร็จ"
+    );
+
+  } finally {
+
+    saving.value = false;
+
+  }
 }
 
 onMounted(() => {
-  loadAssignments();
+
+  loadData();
+
 });
 </script>
- 

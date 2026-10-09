@@ -103,9 +103,7 @@
               Sign Up
             </router-link>
           </template>
-
           <template v-else>
-
             <div
               class="relative group flex items-center
                      gap-3 cursor-pointer">
@@ -116,8 +114,6 @@
               >
                 {{ auth.user?.username }}
               </span>
-
-
               <ul
                 class="absolute right-0 top-12 w-48
                        bg-white rounded-xl shadow-lg
@@ -129,7 +125,6 @@
                        transition-all"
               >
 
-                <!-- Profile -->
                 <li>
                   <router-link
                     to="/profile"
@@ -140,8 +135,6 @@
                   </router-link>
                 </li>
 
-
-                <!-- Role -->
                 <li
                   class="px-4 py-2 text-xs
                          text-gray-400 border-t"
@@ -172,7 +165,7 @@
 <script setup>
 import { computed } from "vue";
 import { useRouter } from "vue-router";
-import { useAuthStore } from "../stores/auth.js";
+import { useAuthStore } from "../../../backend/middleware/auth.js";
 const router = useRouter();
 const auth = useAuthStore();
 

@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from "vue-router";
-import { useAuthStore } from "../../src/frontend/stores/auth.js";
+import { useAuthStore } from "../../../backend/middleware/auth.js";
 // ==============================
 // หน้าเว็บ
 // ==============================
@@ -22,7 +22,6 @@ import evaluatorAssign from "../../src/frontend/components/evaluator/evaluatorAs
 // ผู้รับการประเมิน
 // ==============================
 import evaluateeAssign from "../../src/frontend/components/teacher/evaluateeAssign.vue";
-
 
 const routes = [
   {

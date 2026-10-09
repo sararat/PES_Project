@@ -60,12 +60,10 @@
 import { ref } from "vue";
 import axios from "axios";
 import { useRouter } from "vue-router";
-import { useAuthStore } from "../stores/auth.js";
-
+import { useAuthStore } from "../../../backend/middleware/auth.js";
 
 const router = useRouter();
 const auth = useAuthStore();
-
 const form = ref({
   username: "",
   password: ""
@@ -86,7 +84,6 @@ const login = async () => {
   }
 
   try {
-
     loading.value = true;
     const response = await axios.post(
       "http://localhost:3000/login",
@@ -96,19 +93,14 @@ const login = async () => {
       }
     );
     const data = response.data;
-
     if (
       !data.token ||
       !data.user
     ) {
-
       error.value =
         "ข้อมูล Login จาก Server ไม่ถูกต้อง";
-
       return;
     }
-
-
     auth.login(
       data.user,
       data.token
@@ -130,24 +122,20 @@ const login = async () => {
         auth.logout();
         return;
     }
-
   } catch (err) {
     console.error(
       "LOGIN ERROR:",
       err
     );
-
     if (err.response) {
       error.value =
         err.response.data?.message ||
         `เข้าสู่ระบบไม่สำเร็จ (${err.response.status})`;
     }
-
     else if (err.request) {
       error.value =
         "ไม่สามารถเชื่อมต่อ Backend ได้";
     }
-
     else {
       error.value =
         "เกิดข้อผิดพลาดในการเข้าสู่ระบบ";

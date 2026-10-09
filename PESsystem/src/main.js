@@ -2,7 +2,7 @@ import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import App from './App.vue'
 import router from '../backend/router'
-import { useAuthStore } from '../../../backend/middleware/auth.js'
+import { useAuthStore } from '../src/frontend/stores/auth.js';
 import './style.css'
 const app = createApp(App)
 const pinia = createPinia()

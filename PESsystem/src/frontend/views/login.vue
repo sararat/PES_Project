@@ -60,7 +60,7 @@
 import { ref } from "vue";
 import axios from "axios";
 import { useRouter } from "vue-router";
-import { useAuthStore } from "../../../backend/middleware/auth.js";
+import { useAuthStore } from '../src/frontend/stores/auth.js';
 
 const router = useRouter();
 const auth = useAuthStore();

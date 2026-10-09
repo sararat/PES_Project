@@ -165,7 +165,7 @@
 <script setup>
 import { computed } from "vue";
 import { useRouter } from "vue-router";
-import { useAuthStore } from "../../../backend/middleware/auth.js";
+import { useAuthStore } from '../src/frontend/stores/auth.js';
 const router = useRouter();
 const auth = useAuthStore();
 

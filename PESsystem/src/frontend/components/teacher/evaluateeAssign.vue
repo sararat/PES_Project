@@ -63,10 +63,10 @@
 
         <div class="flex justify-center pt-4">
           <button @click="saveAll" :disabled="saving"
-            class="bg-blue-600 text-white px-10 py-3 rounded-lg hover:bg-blue-700 disabled:bg-gray-400">
+            class="bg-blue-600 text-white px-4 py-3 rounded-lg mb-5 mr-5 hover:bg-blue-700 disabled:bg-gray-400">
             {{ saving ? "กำลังบันทึก..." : "บันทึกทั้งหมด" }}
           </button>
-          <button @click="exportPDF" class="bg-green-600 text-white px-4 py-2 rounded-lg mb-5">
+          <button @click="exportPDF" class="bg-green-600 text-white px-4 py-2 rounded-lg mb-5  hover:bg-blue-700 disabled:bg-gray-400">
             Export PDF
           </button>
         </div>

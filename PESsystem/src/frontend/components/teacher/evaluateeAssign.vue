@@ -66,7 +66,7 @@
             class="bg-blue-600 text-white px-4 py-3 rounded-lg mb-5 mr-5 hover:bg-blue-700 disabled:bg-gray-400">
             {{ saving ? "กำลังบันทึก..." : "บันทึกทั้งหมด" }}
           </button>
-          <button @click="exportPDF" class="bg-green-600 text-white px-4 py-2 rounded-lg mb-5  hover:bg-blue-700 disabled:bg-gray-400">
+          <button @click="exportPDF" class="bg-green-600 text-white px-4 py-2 rounded-lg mb-5  hover:bg-green-700 disabled:bg-gray-400">
             Export PDF
           </button>
         </div>

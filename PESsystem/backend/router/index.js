@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from "vue-router";
-import { useAuthStore } from '../src/frontend/stores/auth.js';
+import { useAuthStore } from '../../src/frontend/stores/auth.js';
 // ==============================
 // หน้าเว็บ
 // ==============================

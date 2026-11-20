@@ -363,38 +363,10 @@ app.get("/api/evaluatee/assignments", auth, async (req, res) => {
 
 app.get("/api/evaluation-settings", auth, async (req, res) => {
   try {
-    const periodName = req.body.period_name;
-
-    await db.promise().query(
-      `INSERT INTO assignments
-  (
-    evaluator_id,
-    evaluatee_id,
-    evaluatee_name,
-    department,
-    period_id,
-    period,
-    status,
-    evaluatee_data
-  )
-  SELECT
-    NULL,
-    u.id,
-    CONCAT(u.fname, ' ', u.lname),
-    u.department,
-    NULL,
-    ?,
-    'รอประเมิน',
-    '{}'
-  FROM users u
-  WHERE u.role = 'evaluatee'
-  AND NOT EXISTS (
-    SELECT 1
-    FROM assignments a
-    WHERE a.evaluatee_id = u.id
-    AND a.period = ?
-  )`,
-      [periodName, periodName]
+    const [rows] = await db.promise().query(
+      `SELECT *
+       FROM settings
+       ORDER BY id DESC`
     );
     res.json(rows);
   } catch (error) {

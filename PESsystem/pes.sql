@@ -25,6 +25,7 @@ CREATE TABLE assignments (
     period VARCHAR(100),
     status VARCHAR(30),
     evaluatee_data JSON NULL,
+    evaluator_data JSON NULL;
     evaluator_comment TEXT NULL,
     evaluator_signature TEXT NULL,
 

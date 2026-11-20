@@ -6,10 +6,7 @@ import { useAuthStore } from '../../src/frontend/stores/auth.js';
 import main from "../../src/frontend/views/main.vue";
 import signup from "../../src/frontend/views/signup.vue";
 import login from "../../src/frontend/views/login.vue";
-// ==============================
-// หน้าทั่วไป
-// ==============================
-import profile from "../../src/frontend/views/profile.vue";
+
 // ==============================
 // งานบุคลากร
 // ==============================

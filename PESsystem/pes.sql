@@ -1,11 +1,10 @@
-CREATE DATABASE pessystem;
 USE pessystem;
 
 CREATE TABLE users (
     id INT AUTO_INCREMENT PRIMARY KEY,
     fname VARCHAR(100) NOT NULL,
     lname VARCHAR(100) NOT NULL,
-    department VARCHAR(100);,
+    department VARCHAR(100),
     username VARCHAR(100) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
     role ENUM(
@@ -15,7 +14,7 @@ CREATE TABLE users (
     ) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
- 
+
 CREATE TABLE assignments (
     id INT AUTO_INCREMENT PRIMARY KEY,
     evaluator_id INT,
@@ -25,14 +24,20 @@ CREATE TABLE assignments (
     period_id INT,
     period VARCHAR(100),
     status VARCHAR(30),
-    evaluatee_data JSON NULL
+    evaluatee_data JSON NULL,
     evaluator_comment TEXT NULL,
-    evaluator_signature TEXT NULL;
+    evaluator_signature TEXT NULL,
+
+    FOREIGN KEY (evaluator_id) REFERENCES users(id),
+    FOREIGN KEY (evaluatee_id) REFERENCES users(id)
 );
+
 INSERT INTO assignments
-(evaluator_id, evaluatee_id, evaluatee_name, department, period_id, period, status,evaluatee_data)
+(evaluator_id, evaluatee_id, evaluatee_name, department,
+ period_id, period, status, evaluatee_data)
 VALUES
-(2, 5, 'นายสมชาย ใจดี', 'เทคโนโลยีสารสนเทศ', 1, 'รอบที่ 1/2569', 'รอประเมิน', "PDF");
+(1, 2, 'นายสมชาย ใจดี', 'เทคโนโลยีสารสนเทศ',
+ 1, 'รอบที่ 1/2569', 'รอประเมิน', '{"file_type":"PDF"}');
 
 CREATE TABLE settings (
     id INT AUTO_INCREMENT PRIMARY KEY,
